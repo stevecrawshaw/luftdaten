@@ -6,10 +6,36 @@ source("../airquality_GIT/importODS.R")
 # install.packages("remotes")
 # remotes::install_github("davidcarslaw/openairmaps")
 
-1# period <- " IN ['2021-11-01T00:00:00' TO '2021-11-07T23:59:00']"
+# period <- " IN ['2021-11-01T00:00:00' TO '2021-11-07T23:59:00']"
 date_on <- "2021-11-13"
 date_off <- "2021-11-22"
 sensor_id <- "66987"
+
+sts_sensors_vec <- 
+c("66963", 
+"66966",
+"66970",
+"66972",
+"66974",
+"66979",
+"66987",
+"67568",
+"67655",
+"67665")
+
+field_filter_str_fnc <- function(field_name = "siteid", values_vec = c("203", "215")){
+
+    field_assign <- str_glue("{field_name} = ")
+    field_collapse = str_glue(" OR {field_assign}")
+
+pasted_str <- paste0(values_vec, collapse = field_collapse)
+ods_search_str <- str_glue("{field_assign}{pasted_str}")
+return(ods_search_str)
+
+}
+# paste into search box on portal
+sts_sensors <- field_filter_str_fnc(field_name = "sensor_id",
+                                    values_vec = sts_sensors_vec)
 
 ld_raw <- getODSExport(select_str = "date, pm10, pm2_5",
                        date_col = "date",
@@ -19,7 +45,13 @@ ld_raw <- getODSExport(select_str = "date, pm10, pm2_5",
                        dataset = "luftdaten_pm_bristol") %>% 
     rename(pm2.5 = pm2_5)
 #get st. werbs sensors
-ld_all_raw_tbl <- read_delim("https://opendata.bristol.gov.uk/explore/dataset/luftdaten_pm_bristol/download/?format=csv&disjunctive.sensor_id=true&geofilter.polygon=(51.46213587023546,-2.5992965698242188),(51.47796179607121,-2.5992965698242188),(51.47796179607121,-2.569856643676758),(51.46213587023546,-2.569856643676758),(51.46213587023546,-2.5992965698242188)&refine.date=2021%2F11&timezone=Europe/London&lang=en&use_labels_for_header=false&csv_separator=%3B", delim = ";")
+ld_all_raw_tbl <- getODSExport(select_str = "sensor_id, date, pm10, pm2_5, geo_point_2d",
+                               date_col = "date",
+                               dateon = date_on,
+                               dateoff = date_off,
+                               where_str = sts_sensors,
+                               dataset = "luftdaten_pm_bristol") %>% 
+    rename(pm2.5 = pm2_5)
 # put into format needed for openairmaps
 ld_all_tbl <- ld_all_raw_tbl %>% 
     separate(geo_point_2d,
@@ -27,7 +59,7 @@ ld_all_tbl <- ld_all_raw_tbl %>%
              sep = ",",
              convert = TRUE) %>% 
     mutate(sensor_id = as_factor(sensor_id)) %>% 
-    select(date, pm2.5 = pm2_5, pm10, sensor_id, latitude, longitude) %>% 
+    select(date, pm2.5, pm10, sensor_id, latitude, longitude) %>% 
     filter(date >= as.POSIXct(date_on, tz = "UTC"),
            date <= as.POSIXct(date_off, tz = "UTC"))
 
