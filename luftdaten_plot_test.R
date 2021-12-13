@@ -5,6 +5,7 @@ pkg_attach2(libs)
 source("../airquality_GIT/importODS.R")
 # install.packages("remotes")
 # remotes::install_github("davidcarslaw/openairmaps")
+#library("openairmaps")
 
 # period <- " IN ['2021-11-01T00:00:00' TO '2021-11-07T23:59:00']"
 date_on <- "2021-11-13"
@@ -25,7 +26,7 @@ c("66963",
 
 # function to create search string for ODS box from vector
 field_filter_str_fnc <- function(field_name = "siteid", values_vec = c("203", "215")){
-
+# function to turn a vector of values into a search string for the ODS SQL API
     field_assign <- str_glue("{field_name} = ")
     field_collapse = str_glue(" OR {field_assign}")
 
