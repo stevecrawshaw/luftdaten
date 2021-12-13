@@ -8,7 +8,7 @@ source("../airquality_GIT/importODS.R")
 
 # period <- " IN ['2021-11-01T00:00:00' TO '2021-11-07T23:59:00']"
 date_on <- "2021-11-13"
-date_off <- "2021-11-22"
+date_off <- "2021-11-30"
 sensor_id <- "66987"
 
 sts_sensors_vec <- 
@@ -23,6 +23,7 @@ c("66963",
 "67655",
 "67665")
 
+# function to create search string for ODS box from vector
 field_filter_str_fnc <- function(field_name = "siteid", values_vec = c("203", "215")){
 
     field_assign <- str_glue("{field_name} = ")
